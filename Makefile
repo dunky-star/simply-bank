@@ -22,4 +22,7 @@ migratedown: ## Roll back all migrations
 sqlc: ## Generate SQLC code
 	sqlc generate
 
-.PHONY: help createdb dropdb migrateup migratedown sqlc
+test: ## Run tests
+	go test -v -cover ./...
+
+.PHONY: help createdb dropdb migrateup migratedown sqlc test
