@@ -4,16 +4,16 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dunky-star/simply-bank/internal/testutil"
+	"github.com/dunky-star/simply-bank/internal/util"
 )
 
 var testQueries *Queries
 
 func TestMain(m *testing.M) {
-	conn := testutil.NewTestDB()
-	testQueries = New(conn)
+	db := util.NewTestDB()
+	testQueries = New(db)
 
 	code := m.Run()
-	_ = conn.Close()
+	_ = db.Close()
 	os.Exit(code)
 }

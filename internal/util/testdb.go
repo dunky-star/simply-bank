@@ -1,5 +1,4 @@
-// Package testutil provides shared helpers for database-backed tests.
-package testutil
+package util
 
 import (
 	"database/sql"
@@ -9,7 +8,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq" // registers the "postgres" driver
+	_ "github.com/lib/pq"
 )
 
 const dbDriver = "postgres"
@@ -17,7 +16,7 @@ const dbDriver = "postgres"
 // NewTestDB returns an open *sql.DB for tests, loading .env if present.
 func NewTestDB() *sql.DB {
 	if err := godotenv.Load("../../.env"); err != nil {
-		log.Println("testutil: .env not found, using real env vars:", err)
+		log.Println("util: .env not found, using real env vars:", err)
 	}
 
 	dbSource := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
@@ -30,10 +29,10 @@ func NewTestDB() *sql.DB {
 
 	conn, err := sql.Open(dbDriver, dbSource)
 	if err != nil {
-		log.Fatal("testutil: cannot open database: ", err)
+		log.Fatal("util: cannot open database: ", err)
 	}
 	if err := conn.Ping(); err != nil {
-		log.Fatal("testutil: cannot reach database: ", err)
+		log.Fatal("util: cannot reach database: ", err)
 	}
 	return conn
 }
