@@ -2,7 +2,7 @@ name: ci-test
 
 on:
   push:
-    branches: [ main ]        # keep "master" if that's your default branch
+    branches: [ main ]      # your repo uses master; change to main if you rename it
   pull_request:
     branches: [ main ]
 
@@ -17,7 +17,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    timeout-minutes: 10       # don't let hung jobs burn minutes
+    timeout-minutes: 10       # fail fast if something hangs
 
     services:
       postgres:
@@ -34,6 +34,14 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    # Replaces your gitignored .env in CI — Make picks these up automatically
+    env:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: simple_bank
+
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
@@ -41,7 +49,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod   # Go version comes from your project
+          go-version-file: go.mod
+
+      - name: Install golang-migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.12.2/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate /usr/bin/migrate
+          which migrate
 
       - name: Run migrations
         run: make migrateup
