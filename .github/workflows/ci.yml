@@ -2,22 +2,22 @@ name: ci-test
 
 on:
   push:
-    branches: [ main ]      # your repo uses master; change to main if you rename it
+    branches: [ master ]      # change to main if you rename your default branch
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 permissions:
-  contents: read              # least-privilege GITHUB_TOKEN
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true    # cancel outdated runs on new pushes
+  cancel-in-progress: true
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    timeout-minutes: 10       # fail fast if something hangs
+    timeout-minutes: 10
 
     services:
       postgres:
@@ -54,7 +54,7 @@ jobs:
       - name: Install golang-migrate
         run: |
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.12.2/migrate.linux-amd64.tar.gz | tar xvz
-          sudo mv migrate /usr/bin/migrate
+          sudo mv migrate.linux-amd64 /usr/bin/migrate
           which migrate
 
       - name: Run migrations
