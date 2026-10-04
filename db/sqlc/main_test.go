@@ -8,12 +8,14 @@ import (
 )
 
 var testQueries *Queries
+var testStore *Store
+var testDB = util.NewTestDB()
 
 func TestMain(m *testing.M) {
-	db := util.NewTestDB()
-	testQueries = New(db)
+	testQueries = New(testDB)
+	testStore = NewStore(testDB)
 
 	code := m.Run()
-	_ = db.Close()
+	_ = testDB.Close()
 	os.Exit(code)
 }
