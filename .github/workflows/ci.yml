@@ -2,9 +2,9 @@ name: ci-test
 
 on:
   push:
-    branches: [ master ]      # change to main if you rename your default branch
+    branches: [ main ]      # change to main if you rename your default branch
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 permissions:
   contents: read
