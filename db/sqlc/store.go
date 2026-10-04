@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"slices"
 
 	"github.com/google/uuid"
 )
@@ -65,12 +66,18 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
-		_, err = q.GetAccountForUpdate(ctx, arg.FromAccountID)
-		if err != nil {
+		// Order accounts by ID to avoid deadlocks under concurrent opposite-direction transfers.
+		fromID, toID := arg.FromAccountID, arg.ToAccountID
+		fromAmt, toAmt := int64(-arg.Amount), arg.Amount
+		if slices.Compare(fromID[:], toID[:]) > 0 {
+			fromID, toID = toID, fromID
+			fromAmt, toAmt = toAmt, fromAmt
+		}
+
+		if _, err = q.GetAccountForUpdate(ctx, fromID); err != nil {
 			return err
 		}
-		_, err = q.GetAccountForUpdate(ctx, arg.ToAccountID)
-		if err != nil {
+		if _, err = q.GetAccountForUpdate(ctx, toID); err != nil {
 			return err
 		}
 
@@ -99,23 +106,31 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			ID:     arg.FromAccountID,
-			Amount: -arg.Amount,
-		})
+		first, second, err := addMoney(ctx, q, fromID, fromAmt, toID, toAmt)
 		if err != nil {
 			return err
 		}
-		result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			ID:     arg.ToAccountID,
-			Amount: arg.Amount,
-		})
-		if err != nil {
-			return err
+		if fromID == arg.FromAccountID {
+			result.FromAccount, result.ToAccount = first, second
+		} else {
+			result.FromAccount, result.ToAccount = second, first
 		}
 
 		return nil
 	})
 
 	return result, err
+}
+
+// addMoney applies two atomic balance deltas in the given order and returns the updated accounts.
+func addMoney(ctx context.Context, q *Queries, id1 uuid.UUID, amt1 int64, id2 uuid.UUID, amt2 int64) (Account, Account, error) {
+	a1, err := q.AddAccountBalance(ctx, AddAccountBalanceParams{ID: id1, Amount: amt1})
+	if err != nil {
+		return Account{}, Account{}, err
+	}
+	a2, err := q.AddAccountBalance(ctx, AddAccountBalanceParams{ID: id2, Amount: amt2})
+	if err != nil {
+		return Account{}, Account{}, err
+	}
+	return a1, a2, nil
 }
