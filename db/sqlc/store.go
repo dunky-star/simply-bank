@@ -65,11 +65,11 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
-		fromAccount, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
+		_, err = q.GetAccountForUpdate(ctx, arg.FromAccountID)
 		if err != nil {
 			return err
 		}
-		toAccount, err := q.GetAccountForUpdate(ctx, arg.ToAccountID)
+		_, err = q.GetAccountForUpdate(ctx, arg.ToAccountID)
 		if err != nil {
 			return err
 		}
@@ -99,16 +99,16 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		result.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
-			ID:      fromAccount.ID,
-			Balance: fromAccount.Balance - arg.Amount,
+		result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			ID:     arg.FromAccountID,
+			Amount: -arg.Amount,
 		})
 		if err != nil {
 			return err
 		}
-		result.ToAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
-			ID:      toAccount.ID,
-			Balance: toAccount.Balance + arg.Amount,
+		result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			ID:     arg.ToAccountID,
+			Amount: arg.Amount,
 		})
 		if err != nil {
 			return err
