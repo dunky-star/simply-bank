@@ -1,38 +1,8 @@
 package util
 
-import (
-	"database/sql"
-	"fmt"
-	"log"
-	"net/url"
-	"os"
+import "database/sql"
 
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
-)
-
-const dbDriver = "postgres"
-
-// NewTestDB returns an open *sql.DB for tests, loading .env if present.
+// NewTestDB returns an open *sql.DB for tests, loading .env from the project root.
 func NewTestDB() *sql.DB {
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Println("util: .env not found, using real env vars:", err)
-	}
-
-	dbSource := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		os.Getenv("POSTGRES_USER"),
-		url.QueryEscape(os.Getenv("POSTGRES_PASSWORD")),
-		os.Getenv("POSTGRES_HOST"),
-		os.Getenv("POSTGRES_PORT"),
-		os.Getenv("POSTGRES_DB"),
-	)
-
-	conn, err := sql.Open(dbDriver, dbSource)
-	if err != nil {
-		log.Fatal("util: cannot open database: ", err)
-	}
-	if err := conn.Ping(); err != nil {
-		log.Fatal("util: cannot reach database: ", err)
-	}
-	return conn
+	return openDBFromEnv("../../.env")
 }

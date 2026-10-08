@@ -25,4 +25,7 @@ sqlc: ## Generate SQLC code
 test: ## Run tests
 	go test -v -cover ./...
 
-.PHONY: help createdb dropdb migrateup migratedown sqlc test
+server: ## Run the server
+	go run main.go
+
+.PHONY: help createdb dropdb migrateup migratedown sqlc test server

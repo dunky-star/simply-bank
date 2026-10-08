@@ -1,11 +1,21 @@
 package main
 
 import (
-	"fmt"
-	"time"
+	"log"
+
+	"github.com/dunky-star/simply-bank/api"
+	db "github.com/dunky-star/simply-bank/db/sqlc"
+	"github.com/dunky-star/simply-bank/internal/util"
 )
 
+const serverAddress = "0.0.0.0:8080"
+
 func main() {
-	fmt.Println("Hello, World!")
-	fmt.Println("Current time is", time.Now())
+	conn := util.NewDB()
+	store := db.NewStore(conn)
+
+	server := api.NewServer(store)
+	if err := server.Start(serverAddress); err != nil {
+		log.Fatal("cannot start server:", err)
+	}
 }
