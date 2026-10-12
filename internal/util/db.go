@@ -13,9 +13,9 @@ import (
 
 const dbDriver = "postgres"
 
-// openDBFromEnv loads .env at envPath (if present), builds the Postgres URL
+// OpenDBFromEnv loads .env at envPath (if present), builds the Postgres URL
 // from POSTGRES_* vars, and returns a pinged *sql.DB.
-func openDBFromEnv(envPath string) *sql.DB {
+func OpenDBFromEnv(envPath string) *sql.DB {
 	if err := godotenv.Load(envPath); err != nil {
 		log.Println("util: .env not found, using real env vars:", err)
 	}
@@ -40,5 +40,5 @@ func openDBFromEnv(envPath string) *sql.DB {
 
 // NewDB returns an open *sql.DB for the app, loading .env from the working dir if present.
 func NewDB() *sql.DB {
-	return openDBFromEnv(".env")
+	return OpenDBFromEnv(".env")
 }

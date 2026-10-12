@@ -4,5 +4,5 @@ import "database/sql"
 
 // NewTestDB returns an open *sql.DB for tests, loading .env from the project root.
 func NewTestDB() *sql.DB {
-	return openDBFromEnv("../../.env")
+	return OpenDBFromEnv("../../.env")
 }
