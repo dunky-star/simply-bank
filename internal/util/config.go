@@ -20,10 +20,16 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.SetConfigType("env") // We can also use json, yaml, etc.
 
 	viper.AutomaticEnv()
+	viper.BindEnv("DB_DRIVER", "DB_DRIVER")
+	viper.BindEnv("DB_SOURCE", "DB_SOURCE")
+	viper.BindEnv("SERVER_ADDRESS", "SERVER_ADDRESS")
 
-	err = viper.ReadInConfig()
-	if err != nil {
-		return
+	// Config file is optional; env vars (AutomaticEnv) suffice in CI/prod.
+	if err = viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return
+		}
+		err = nil
 	}
 
 	err = viper.Unmarshal(&config)

@@ -34,13 +34,11 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    # Replaces your gitignored .env in CI — Make picks these up automatically
+    # Replaces your gitignored .app.env in CI — Viper picks these up via AutomaticEnv
     env:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: secret
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: simple_bank
+      DB_DRIVER: postgres
+      DB_SOURCE: postgres://root:secret@localhost:5432/simple_bank?sslmode=disable
+      SERVER_ADDRESS: localhost:8080
 
     steps:
       - name: Check out code into the Go module directory
