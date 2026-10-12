@@ -4,41 +4,30 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"net/url"
-	"os"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
-const dbDriver = "postgres"
-
-// OpenDBFromEnv loads .env at envPath (if present), builds the Postgres URL
-// from POSTGRES_* vars, and returns a pinged *sql.DB.
-func OpenDBFromEnv(envPath string) *sql.DB {
-	if err := godotenv.Load(envPath); err != nil {
-		log.Println("util: .env not found, using real env vars:", err)
-	}
-
-	dbSource := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		os.Getenv("POSTGRES_USER"),
-		url.QueryEscape(os.Getenv("POSTGRES_PASSWORD")),
-		os.Getenv("POSTGRES_HOST"),
-		os.Getenv("POSTGRES_PORT"),
-		os.Getenv("POSTGRES_DB"),
-	)
-
-	conn, err := sql.Open(dbDriver, dbSource)
+// OpenDB opens and pings a *sql.DB for the given driver and datasource.
+// It returns a wrapped error so callers can decide how to handle failure.
+func OpenDB(driver, source string) (*sql.DB, error) {
+	conn, err := sql.Open(driver, source)
 	if err != nil {
-		log.Fatal("util: cannot open database: ", err)
+		return nil, fmt.Errorf("open %s db: %w", driver, err)
 	}
 	if err := conn.Ping(); err != nil {
-		log.Fatal("util: cannot reach database: ", err)
+		_ = conn.Close()
+		return nil, fmt.Errorf("ping %s db: %w", driver, err)
 	}
-	return conn
+	return conn, nil
 }
 
-// NewDB returns an open *sql.DB for the app, loading .env from the working dir if present.
-func NewDB() *sql.DB {
-	return OpenDBFromEnv(".env")
+// NewDB returns an open, pinged *sql.DB built from the Viper-loaded config.
+// Fatal here is intentional: the app cannot run without a database.
+func NewDB(config Config) *sql.DB {
+	conn, err := OpenDB(config.DBDriver, config.DBSource)
+	if err != nil {
+		log.Fatal("cannot connect to db: ", err)
+	}
+	return conn
 }
