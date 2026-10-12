@@ -8,7 +8,7 @@ import (
 )
 
 var testQueries *Queries
-var testStore *Store
+var testStore Store
 var testDB = util.NewTestDB()
 
 func TestMain(m *testing.M) {

@@ -28,4 +28,7 @@ test: ## Run tests
 server: ## Run the server
 	go run main.go
 
-.PHONY: help createdb dropdb migrateup migratedown sqlc test server
+mock: ## Generate mock code
+	mockgen -package mockdb -destination db/mock/store.go github.com/dunky-star/simply-bank/db/sqlc Store	
+
+.PHONY: help createdb dropdb migrateup migratedown sqlc test server mock
