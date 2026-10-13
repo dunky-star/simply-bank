@@ -8,6 +8,7 @@ import (
 	db "github.com/dunky-star/simply-bank/db/sqlc"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type createAccountRequest struct {
@@ -25,7 +26,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	arg := db.CreateAccountParams{
 		Owner:    req.Owner,
 		Currency: req.Currency,
-		Balance:  0,
+		Balance:  decimal.Zero,
 	}
 
 	account, err := server.store.CreateAccount(ctx, arg)

@@ -4,7 +4,7 @@
 CREATE TABLE "accounts" (
   "id" uuid PRIMARY KEY DEFAULT uuidv7(),
   "owner" varchar NOT NULL,
-  "balance" bigint NOT NULL,
+  "balance" numeric NOT NULL,
   "currency" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
@@ -12,7 +12,7 @@ CREATE TABLE "accounts" (
 CREATE TABLE "entries" (
   "id" uuid PRIMARY KEY DEFAULT uuidv7(),
   "account_id" uuid NOT NULL,
-  "amount" bigint NOT NULL,
+  "amount" numeric NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
@@ -20,7 +20,7 @@ CREATE TABLE "transfers" (
   "id" uuid PRIMARY KEY DEFAULT uuidv7(),
   "from_account_id" uuid NOT NULL,
   "to_account_id" uuid NOT NULL,
-  "amount" bigint NOT NULL,
+  "amount" numeric NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 

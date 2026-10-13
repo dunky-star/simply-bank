@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,7 +15,7 @@ func TestTransferTx(t *testing.T) {
 	fmt.Println(">> before:", account1.Balance, account2.Balance)
 
 	n := 2
-	amount := int64(10)
+	amount := decimal.NewFromInt(10)
 
 	errs := make(chan error)
 	results := make(chan TransferTxResult)
@@ -59,7 +60,7 @@ func TestTransferTx(t *testing.T) {
 		fromEntry := result.FromEntry
 		require.NotEmpty(t, fromEntry)
 		require.Equal(t, account1.ID, fromEntry.AccountID)
-		require.Equal(t, -amount, fromEntry.Amount)
+		require.Equal(t, amount.Neg(), fromEntry.Amount)
 		require.NotZero(t, fromEntry.ID)
 		require.NotZero(t, fromEntry.CreatedAt)
 
@@ -88,13 +89,13 @@ func TestTransferTx(t *testing.T) {
 		// check balances
 		fmt.Println(">> tx:", fromAccount.Balance, toAccount.Balance)
 
-		diff1 := account1.Balance - fromAccount.Balance
-		diff2 := toAccount.Balance - account2.Balance
-		require.Equal(t, diff1, diff2)
-		require.True(t, diff1 > 0)
-		require.True(t, diff1%amount == 0) // 1 * amount, 2 * amount, 3 * amount, ..., n * amount
+		diff1 := account1.Balance.Sub(fromAccount.Balance)
+		diff2 := toAccount.Balance.Sub(account2.Balance)
+		require.True(t, diff1.Equal(diff2))
+		require.True(t, diff1.GreaterThan(decimal.Zero))
+		require.True(t, diff1.Mod(amount).Equal(decimal.Zero)) // 1 * amount, 2 * amount, 3 * amount, ..., n * amount
 
-		k := int(diff1 / amount)
+		k := int(diff1.Div(amount).IntPart())
 		require.True(t, k >= 1 && k <= n)
 		require.NotContains(t, existed, k)
 		existed[k] = true
@@ -109,6 +110,6 @@ func TestTransferTx(t *testing.T) {
 
 	fmt.Println(">> after:", updatedAccount1.Balance, updatedAccount2.Balance)
 
-	require.Equal(t, account1.Balance-int64(n)*amount, updatedAccount1.Balance)
-	require.Equal(t, account2.Balance+int64(n)*amount, updatedAccount2.Balance)
+	require.Equal(t, account1.Balance.Sub(decimal.NewFromInt(int64(n)).Mul(amount)), updatedAccount1.Balance)
+	require.Equal(t, account2.Balance.Add(decimal.NewFromInt(int64(n)).Mul(amount)), updatedAccount2.Balance)
 }

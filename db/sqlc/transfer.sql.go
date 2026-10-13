@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 const createTransfer = `-- name: CreateTransfer :one
@@ -22,9 +23,9 @@ INSERT INTO transfers (
 `
 
 type CreateTransferParams struct {
-	FromAccountID uuid.UUID `json:"from_account_id"`
-	ToAccountID   uuid.UUID `json:"to_account_id"`
-	Amount        int64     `json:"amount"`
+	FromAccountID uuid.UUID       `json:"from_account_id"`
+	ToAccountID   uuid.UUID       `json:"to_account_id"`
+	Amount        decimal.Decimal `json:"amount"`
 }
 
 func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {

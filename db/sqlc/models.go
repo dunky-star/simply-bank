@@ -8,22 +8,23 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type Account struct {
-	ID        uuid.UUID `json:"id"`
-	Owner     string    `json:"owner"`
-	Balance   int64     `json:"balance"`
-	Currency  string    `json:"currency"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        uuid.UUID       `json:"id"`
+	Owner     string          `json:"owner"`
+	Balance   decimal.Decimal `json:"balance"`
+	Currency  string          `json:"currency"`
+	CreatedAt time.Time       `json:"created_at"`
 }
 
 type Entry struct {
 	ID        uuid.UUID `json:"id"`
 	AccountID uuid.UUID `json:"account_id"`
 	// can be negative or positive
-	Amount    int64     `json:"amount"`
-	CreatedAt time.Time `json:"created_at"`
+	Amount    decimal.Decimal `json:"amount"`
+	CreatedAt time.Time       `json:"created_at"`
 }
 
 type Transfer struct {
@@ -31,6 +32,6 @@ type Transfer struct {
 	FromAccountID uuid.UUID `json:"from_account_id"`
 	ToAccountID   uuid.UUID `json:"to_account_id"`
 	// must be positive
-	Amount    int64     `json:"amount"`
-	CreatedAt time.Time `json:"created_at"`
+	Amount    decimal.Decimal `json:"amount"`
+	CreatedAt time.Time       `json:"created_at"`
 }

@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 const createEntry = `-- name: CreateEntry :one
@@ -21,8 +22,8 @@ INSERT INTO entries (
 `
 
 type CreateEntryParams struct {
-	AccountID uuid.UUID `json:"account_id"`
-	Amount    int64     `json:"amount"`
+	AccountID uuid.UUID       `json:"account_id"`
+	Amount    decimal.Decimal `json:"amount"`
 }
 
 func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error) {

@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // Store provides all functions to execute db queries and transactions
@@ -49,9 +50,9 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) erro
 
 // TransferTxParams contains the input parameters of the transfer transaction
 type TransferTxParams struct {
-	FromAccountID uuid.UUID `json:"from_account_id"`
-	ToAccountID   uuid.UUID `json:"to_account_id"`
-	Amount        int64     `json:"amount"`
+	FromAccountID uuid.UUID       `json:"from_account_id"`
+	ToAccountID   uuid.UUID       `json:"to_account_id"`
+	Amount        decimal.Decimal `json:"amount"`
 }
 
 // TransferTxResult is the result of the transfer transaction
@@ -74,7 +75,7 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 
 		// Order accounts by ID to avoid deadlocks under concurrent opposite-direction transfers.
 		fromID, toID := arg.FromAccountID, arg.ToAccountID
-		fromAmt, toAmt := int64(-arg.Amount), arg.Amount
+		fromAmt, toAmt := arg.Amount.Neg(), arg.Amount
 		if slices.Compare(fromID[:], toID[:]) > 0 {
 			fromID, toID = toID, fromID
 			fromAmt, toAmt = toAmt, fromAmt
@@ -98,7 +99,7 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 
 		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.FromAccountID,
-			Amount:    -arg.Amount,
+			Amount:    arg.Amount.Neg(),
 		})
 		if err != nil {
 			return err
@@ -129,7 +130,7 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 }
 
 // addMoney applies two atomic balance deltas in the given order and returns the updated accounts.
-func addMoney(ctx context.Context, q *Queries, id1 uuid.UUID, amt1 int64, id2 uuid.UUID, amt2 int64) (Account, Account, error) {
+func addMoney(ctx context.Context, q *Queries, id1 uuid.UUID, amt1 decimal.Decimal, id2 uuid.UUID, amt2 decimal.Decimal) (Account, Account, error) {
 	a1, err := q.AddAccountBalance(ctx, AddAccountBalanceParams{ID: id1, Amount: amt1})
 	if err != nil {
 		return Account{}, Account{}, err
