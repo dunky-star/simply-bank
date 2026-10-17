@@ -19,8 +19,9 @@ migrateup: ## Apply all pending migrations
 migratedown: ## Roll back all migrations
 	migrate -path db/migration -database "$(DB_URL)" down -all
 
-sqlc: ## Generate SQLC code
+sqlc: ## Generate SQLC code + mocks (kept in sync)
 	sqlc generate
+	$(MAKE) mock
 
 test: ## Run tests
 	go test -v -cover ./...
@@ -29,6 +30,8 @@ server: ## Run the server
 	go run main.go
 
 mock: ## Generate mock code
-	mockgen -package mockdb -destination db/mock/store.go github.com/dunky-star/simply-bank/db/sqlc Store	
+	mockgen -package mockdb -destination db/mock/store.go github.com/dunky-star/simply-bank/db/sqlc Store
 
-.PHONY: help createdb dropdb migrateup migratedown sqlc test server mock
+generate: sqlc ## Generate all codegen (sqlc + mocks)
+
+.PHONY: help createdb dropdb migrateup migratedown sqlc test server mock generate

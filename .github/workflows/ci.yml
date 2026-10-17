@@ -49,6 +49,16 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Install codegen tools
+        run: |
+          go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+          go install go.uber.org/mock/mockgen@latest
+
+      - name: Generated code must be up to date
+        run: |
+          make generate
+          git diff --exit-code
+
       - name: Install golang-migrate
         run: |
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.12.2/migrate.linux-amd64.tar.gz | tar xvz
